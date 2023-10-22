@@ -21,7 +21,7 @@ from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 DOMAIN = 'tianqi'
 _LOGGER = logging.getLogger(__name__)
 
-SUPPORTED_PLATFORMS = [Platform.WEATHER]
+SUPPORTED_PLATFORMS = [Platform.WEATHER, Platform.SENSOR]
 HTTP_REFERER = base64.b64decode('aHR0cHM6Ly9tLndlYXRoZXIuY29tLmNuLw==').decode()
 USER_AGENT = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_1) AppleWebKit/537 (KHTML, like Gecko) Chrome/116.0 Safari/537'
 
