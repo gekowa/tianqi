@@ -51,14 +51,6 @@ async def async_setup(hass: HomeAssistant, hass_config):
         supports_response=SupportsResponse.OPTIONAL,
     )
 
-    async def update_summary_2(call: ServiceCall):
-        return await client.update_summary_2(**call.data)
-    hass.services.async_register(
-        DOMAIN, 'update_summary_2', update_summary_2,
-        schema=vol.Schema({}, extra=vol.ALLOW_EXTRA),
-        supports_response=SupportsResponse.OPTIONAL,
-    )
-
     async def update_alarms(call: ServiceCall):
         return await client.update_alarms(**call.data)
     hass.services.async_register(
@@ -324,7 +316,6 @@ class TianqiClient:
 
     async def update_summary_and_entities(self, **kwargs):
         await self.update_summary(**kwargs)
-        await self.update_summary_2(**kwargs)
         await self.update_entities()
         return self.data
 
@@ -339,8 +330,8 @@ class TianqiClient:
         else:
             self.data.pop('summary_text', None)
 
-        # if match := re.search(r'dataSK\s*=\s*({.*?})\s*;', txt, re.DOTALL):
-        #     self.data['dataSK'] = json.loads(match.group(1)) or {}
+        if match := re.search(r'dataSK\s*=\s*({.*?})\s*;', txt, re.DOTALL):
+            self.data['dataSK'] = json.loads(match.group(1)) or {}
 
         if match := re.search(r'dataZS\s*=\s*({.*?})\s*;', txt, re.DOTALL):
             self.data['dataZS'] = (json.loads(match.group(1)) or {}).get('zs') or {}
@@ -447,23 +438,6 @@ class TianqiClient:
         if dat:
             self.data['observe'] = dat
         return dat
-    
-    async def update_summary_2(self, **kwargs):
-        api = self.api_url('sk_2d/%s.html' % kwargs.get('area_id', self.area_id))
-        res = await self.http.get(api, allow_redirects=False)
-        txt = await res.text()
-        if not txt:
-            raise IntegrationError(f'Empty response from: {api}')
-        if res.status != 200:
-            self.data['sk_2d'] = txt
-        else:
-            self.data.pop('sk_2d', None)
-
-        if match := re.search(r'dataSK\s*=\s*({.*?})\s*;', txt, re.DOTALL):
-            self.data['dataSK'] = json.loads(match.group(1)) or {}
-
-        return self.data
-
 
 class StationInfo:
     def __init__(self, data: dict):
